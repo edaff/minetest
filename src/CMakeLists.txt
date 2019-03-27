@@ -454,6 +454,7 @@ set(common_SRCS
 	version.cpp
 	voxel.cpp
 	voxelalgorithms.cpp
+	wavm_mod.cpp
 	${common_network_SRCS}
 	${JTHREAD_SRCS}
 	${common_SCRIPT_SRCS}
@@ -531,6 +532,7 @@ set(client_SRCS
 	particles.cpp
 	shader.cpp
 	sky.cpp
+	wavm_mod.cpp
 	wieldmesh.cpp
 	${client_SCRIPT_SRCS}
 	${UNITTEST_CLIENT_SRCS}

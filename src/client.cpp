@@ -47,6 +47,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiscalingfilter.h"
 #include "script/scripting_client.h"
 #include "game.h"
+#include "wavm_mod.h" // Senior_Project
 
 extern gui::IGUIEnvironment* guienv;
 
@@ -1546,6 +1547,14 @@ void Client::typeChatMessage(const std::wstring &message)
 
 	// If message was ate by script API, don't send it to server
 	if (m_script->on_sending_message(wide_to_utf8(message))) {
+		return;
+	}
+
+	// If WAVM mod
+	if(message[0] == L'-') {
+		std::string result = wavm_mod(wide_to_utf8(message));
+		std::wstring output = narrow_to_wide(result);
+		pushToChatQueue(output);
 		return;
 	}
 

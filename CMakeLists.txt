@@ -214,7 +214,7 @@ set(CPACK_PACKAGE_CONTACT "Perttu Ahola <celeron55@gmail.com>")
 
 if(WIN32)
 	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-win64")
+		set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-windows-build")
 	else()
 		set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-win32")
 	endif()

@@ -1,16 +1,35 @@
 #!/bin/bash
 set -e
 
+# Usage:
+# ./buildwin64.sh <build_directory> <minetest_branch_name> <minetest_game_branch_name>
+# ./buildwin64.sh <build_directory>		// Will use Senior_Project_Master by default
+
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ $# -ne 1 ]; then
-	echo "Usage: $0 <build directory>"
-	exit 1
+if [ $# -ne 3 ]; then
+	echo "Usage: $0 <build directory> <minetest_branch_name> <minetest_game_branch_name>"
 fi
+
 builddir=$1
 mkdir -p $builddir
 builddir="$( cd "$builddir" && pwd )"
 packagedir=$builddir/packages
 libdir=$builddir/libs
+
+# Grab command line argument for the git repository branch
+if [ -z "$2" ]
+	then
+		minetest_branch="Senior_Project_Master"
+	else
+		minetest_branch=$2
+fi
+
+if [ -z "$3" ]
+	then
+		minetest_game_branch="Senior_Project_Master"
+	else
+		minetest_game_branch=$3
+fi
 
 toolchain_file=$dir/toolchain_mingw64.cmake
 irrlicht_version=1.8.4
@@ -73,7 +92,7 @@ cd $builddir
 if [ ! "x$EXISTING_MINETEST_DIR" = "x" ]; then
 	ln -s $EXISTING_MINETEST_DIR minetest
 else
-	[ -d minetest ] && (cd minetest && git pull) || (git clone https://github.com/minetest/minetest)
+	[ -d minetest ] && (cd minetest && git pull) || (git clone --branch "$minetest_branch" https://github.com/edaff/minetest.git)
 fi
 cd minetest
 git_hash=$(git rev-parse --short HEAD)
@@ -81,7 +100,7 @@ git_hash=$(git rev-parse --short HEAD)
 # Get minetest_game
 cd games
 if [ "x$NO_MINETEST_GAME" = "x" ]; then
-	[ -d minetest_game ] && (cd minetest_game && git pull) || (git clone https://github.com/minetest/minetest_game)
+	[ -d minetest_game ] && (cd minetest_game && git pull) || (git clone --branch "$minetest_game_branch"  https://github.com/edaff/minetest_game.git)
 fi
 cd ../..
 
@@ -150,9 +169,31 @@ cmake .. \
 	-DLEVELDB_LIBRARY=$libdir/leveldb/lib/libleveldb.dll.a \
 	-DLEVELDB_DLL=$libdir/leveldb/bin/libleveldb.dll
 
-make -j2
+make -j 4
 
 [ "x$NO_PACKAGE" = "x" ] && make package
+
+# Unzip the Minetest build and delete the old zip
+unzip minetest-windows-build.zip
+rm minetest-windows-build.zip
+
+cd minetest-windows-build
+
+# Copy over the missing DLLs to the bin folder
+cp ../../DLLs/libgcc_s_seh-1.dll ./bin/libgcc_s_seh-1.dll
+cp ../../DLLs/libstdc++-6.dll ./bin/libstdc++-6.dll
+cp ../../DLLs/libwinpthread-1.dll ./bin/libwinpthread-1.dll
+
+# Copy over the WAVM bin folder to the Minetest bin folder
+cp --recursive ../../wavm_bin/. ./bin
+cd ./bin
+
+# Extract LLVMJIT files (large)
+unzip LLVMJIT.zip
+cd ../..
+
+# Re-zip the Minetest Windows Build folder
+zip -r minetest-windows-build ./minetest-windows-build
 
 exit 0
 # EOF

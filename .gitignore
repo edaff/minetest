@@ -102,3 +102,7 @@ build/android/obj
 build/android/local.properties
 build/android/.gradle
 timestamp
+
+# Windows Build Directory
+util/buildbot/windows-build/
+util/buildbot/windows_build/
